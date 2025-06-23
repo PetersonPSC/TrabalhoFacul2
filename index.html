@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Clima e Localização</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <h1 class="mb-4 text-center"><i class="bi bi-cloud-sun"></i> Buscar Clima e Localização</h1>
+
+    <!-- Formulário acessível -->
+    <form id="buscaForm" class="row justify-content-center mb-4" role="search">
+        <div class="col-md-6">
+            <label for="localInput" class="form-label visually-hidden">Digite o nome do local</label>
+            <div class="input-group">
+                <input type="text" id="localInput" class="form-control" placeholder="Digite o nome do local" required>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Resultado -->
+    <div id="resultado" class="row justify-content-center"></div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.getElementById('buscaForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Impede o envio padrão do formulário
+
+        const local = document.getElementById('localInput').value.trim();
+        const resultado = document.getElementById('resultado');
+
+        if (!local) return;
+
+        resultado.innerHTML = `
+            <div class="col-md-6">
+                <div class="alert alert-info">
+                    <i class="bi bi-hourglass-split"></i> Buscando...
+                </div>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/buscar?lugar=${encodeURIComponent(local)}`);
+            if (!response.ok) throw new Error("Erro ao buscar localização.");
+            const data = await response.json();
+
+            resultado.innerHTML = `
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Resultado para: <strong>${local}</strong>
+                            </h5>
+                            <p><strong>📍 Endereço:</strong> ${data.endereco}</p>
+                            <p><strong>🧭 Latitude:</strong> ${data.latitude}</p>
+                            <p><strong>🧭 Longitude:</strong> ${data.longitude}</p>
+                            <p><strong>🌡️ Temperatura:</strong> ${data.temperatura}°C</p>
+                            <p><strong>🌤️ Clima:</strong> ${data.descricao}</p>
+                            <a href="${data.maps_url}" class="btn btn-outline-success mt-2" target="_blank">
+                                <i class="bi bi-map"></i> Ver no Google Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            resultado.innerHTML = `
+                <div class="col-md-6">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Erro: ${err.message}
+                    </div>
+                </div>
+            `;
+        }
+    });
+</script>
+
+</body>
+</html>
